@@ -1,0 +1,11 @@
+bin
+src
+.vscode
+go-elasticsearch-alerts
+vendor/
+__debug_bin
+main
+main.exe
+*.log
+*.zip
+log-alert-manager-linux-amd64-*
