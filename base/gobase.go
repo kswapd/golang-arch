@@ -9,6 +9,86 @@ import (
 	//"strconv"
 )
 
+type Sa struct {
+	a int
+	s string
+}
+
+type Sb struct {
+	a int
+	s string
+	Sa
+}
+
+type Sc struct {
+	a int
+	s string
+	Sb
+}
+
+func (t *Sa) IsZero() bool {
+	return t == nil
+}
+func GoStructValue() {
+	//var sa Sa
+	var sa = Sa{
+		a: 1,
+		s: "aa",
+	}
+	var sb Sb
+	var sc Sc
+
+	//fmt.Printf("value is nil: sb:%t, \n", sb.sa == nil)
+	fmt.Printf("value is nil: %t,sb:%+v , sc:%+v\n", sb.Sa.IsZero(), sb, sc)
+	sc.Sb = sb
+	sb.Sa = sa
+	fmt.Printf("value is nil: %t,sb:%+v , sc:%+v\n", sb.Sa.IsZero(), sb, sc)
+
+}
+
+type Ia interface {
+	IsIa() bool
+}
+
+type Ib interface {
+	Ia
+	IsIb() bool
+}
+type Isa struct {
+	a int
+	s string
+}
+
+func (t *Isa) IsIa() bool {
+	return true
+}
+func (t *Isa) IsIb() bool {
+	return false
+}
+
+func checkInterface(baz Ib) {
+	fmt.Printf("interface:%t, %t.\n", baz.IsIa(), baz.IsIb())
+}
+func GoInterface() {
+	var isa = Isa{
+		a: 5,
+		s: "aa",
+	}
+	var iisa *Isa
+	checkInterface(&isa)
+	var j interface{} = &isa
+	var k Ib
+	fmt.Printf("interface2:%t, %t.\n", j.(Ib).IsIa(), j.(Ib).IsIb())
+
+	fmt.Printf("type of k is %T, value is :%+v.\n", k, k)
+	fmt.Printf("type of iisa is %T, value is :%+v.\n", iisa, iisa)
+	iisa = &isa
+	k = j.(Ib)
+	fmt.Printf("type of iisa is %T, value is :%+v.\n", iisa, iisa)
+	fmt.Printf("type of k is %T, value is :%+v.\n", k, k)
+	fmt.Printf("interface3:%t, %t.\n", k.IsIa(), k.IsIb())
+
+}
 func goProducer(ch chan int) {
 	var data int
 	fmt.Println("producing...")

@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"golang-arch/base"
 	_ "golang-arch/httpclient"
-	"golang-arch/proxy"
 )
 
 func main() {
@@ -21,7 +21,9 @@ func main() {
 
 	base.TestStructInitialize()
 	base.TestChanSend3()*/
-	proxy.ProxyHttp()
+	//proxy.ProxyHttp()
+	//base.GoStructValue()
+	base.GoInterface()
 	fmt.Println("finished. ")
 
 }
