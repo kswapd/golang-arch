@@ -18,6 +18,7 @@ type Sb struct {
 	a int
 	s string
 	Sa
+	psa *Sa
 }
 
 type Sc struct {
@@ -42,7 +43,11 @@ func GoStructValue() {
 	fmt.Printf("value is nil: %t,sb:%+v , sc:%+v\n", sb.Sa.IsZero(), sb, sc)
 	sc.Sb = sb
 	sb.Sa = sa
-	fmt.Printf("value is nil: %t,sb:%+v , sc:%+v\n", sb.Sa.IsZero(), sb, sc)
+	sb.psa = &sa
+	sa.a = 88
+	sa.s = "bbb"
+
+	fmt.Printf("value is nil: %t,sb:%+v,%+v , sc:%+v\n", sb.Sa.IsZero(), sb, *sb.psa, sc)
 
 }
 

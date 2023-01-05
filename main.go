@@ -23,7 +23,11 @@ func main() {
 	base.TestChanSend3()*/
 	//proxy.ProxyHttp()
 	//base.GoStructValue()
-	base.GoInterface()
+	//base.GoInterface()
+	//base.CobraCmd()
+	//base.KlogTest()
+	//base.KlogTest2()
+	base.TestContext()
 	fmt.Println("finished. ")
 
 }
