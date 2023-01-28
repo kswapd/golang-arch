@@ -27,7 +27,12 @@ func main() {
 	//base.CobraCmd()
 	//base.KlogTest()
 	//base.KlogTest2()
-	base.TestContext()
+	//base.TestContext()
+	//base.MyInterface()
+	//base.MyStructValue()
+	//base.MySlice()
+	//base.MyEmbeddedStruct()
+	base.MyGoroutine()
 	fmt.Println("finished. ")
 
 }
