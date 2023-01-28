@@ -32,7 +32,8 @@ func main() {
 	//base.MyStructValue()
 	//base.MySlice()
 	//base.MyEmbeddedStruct()
-	base.MyGoroutine()
+	//base.MyGoroutine()
+	base.MySlice2()
 	fmt.Println("finished. ")
 
 }

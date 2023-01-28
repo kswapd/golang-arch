@@ -1,8 +1,11 @@
+// This is a test base package.
 package base
 
 import (
 	"fmt"
 	"time"
+
+	"rsc.io/quote"
 )
 
 type Operation int
@@ -54,7 +57,7 @@ func (s S) VWrite(str string) S {
 }
 
 func (s *S) PWrite(str string) (S, *S) {
-	fmt.Printf("PWrite:%s-->%s\n", s.data1, str)
+	fmt.Printf("PWrite:%d-->%d\n", s.data1, str)
 	s.data1 = str
 	return *s, s
 }
@@ -136,6 +139,16 @@ func MyEmbeddedStruct() {
 func myflush() {
 	fmt.Println("flush")
 }
+
+// Test goroutine
+// param:
+//
+//	a: a
+//	b: b
+//
+// return:
+//
+//	c: c
 func MyGoroutine() {
 	stop := make(chan struct{})
 	testChan := make(chan struct{}, 1)
@@ -170,4 +183,44 @@ func MyGoroutine() {
 	stop <- struct{}{}
 	<-done
 	return
+}
+
+func MySlice2() {
+
+	a := make([]int, 5)
+	a[1] = 42
+	pa := &a
+	//c := *pa
+	c := a
+	//d := pa
+
+	a[1] = 55
+	fmt.Printf("type:%+v,%+v,  %T, %T.\n", a, c, pa, c)
+	fmt.Printf("pointer: (%p, %p, %p, %p).\n", a, pa, c, &c)
+	a = append(a, 3)
+
+	var e1 E1
+	var e2 = E1{}
+	e3 := E1{}
+	e1.Read()
+	e4 := make([]E1, 1)
+	var e5 [3]E1
+	var e6 map[int]E1
+	e7 := make(map[int]E1, 10)
+	e8 := map[int]E1{}
+	/*if e5 == nil {
+		fmt.Printf("nil array value\n")
+	}*/
+	e5[0] = E1{}
+	if e6 == nil {
+		fmt.Printf("nil map value\n")
+	}
+	fmt.Printf("size:%d, %d,%d.\n", len(e5), len(e7), len(e8))
+	e7[1] = E1{}
+	e8[111] = E1{}
+	fmt.Printf("struct:%+v,%+v,%+v, %+v, %+v.\n", e1, e2, e3, e4, e5)
+}
+
+func MyDep() string {
+	return quote.Hello()
 }
