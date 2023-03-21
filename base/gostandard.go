@@ -202,6 +202,7 @@ func MySlice2() {
 	var e1 E1
 	var e2 = E1{}
 	e3 := E1{}
+	e3.s1 = "aa"
 	e1.Read()
 	e4 := make([]E1, 1)
 	var e5 [3]E1

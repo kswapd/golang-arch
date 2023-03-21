@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"golang-arch/base"
+	"golang-arch/etcdraft"
 	_ "golang-arch/httpclient"
 )
 
@@ -33,7 +33,8 @@ func main() {
 	//base.MySlice()
 	//base.MyEmbeddedStruct()
 	//base.MyGoroutine()
-	base.MySlice2()
+	//base.MySlice2()
+	etcdraft.MyRaft()
 	fmt.Println("finished. ")
 
 }
