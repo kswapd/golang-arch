@@ -1,7 +1,10 @@
 package base
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
+
 	//"encoding/json"
 	mr "golang-arch/rect"
 	"math"
@@ -186,4 +189,58 @@ func TestGo() {
 	time.Sleep(time.Second * 3)
 	close(ch)
 	time.Sleep(time.Second * 3)
+}
+
+func TestChanClose() {
+	ch := make(chan int)
+
+	for i := 0; i < 10; i++ {
+		go func(c <-chan int, i int) {
+			fmt.Printf("started is %d.\n", i)
+			<-c // wait for the start channel to be closed
+			fmt.Printf("finished is %d.\n", i)
+		}(ch, i)
+	}
+	time.Sleep(time.Second * 2)
+	fmt.Println("Sending number to this channel...")
+	time.Sleep(time.Second * 2)
+	ch <- 88
+	time.Sleep(time.Second * 2)
+	fmt.Println("Closing this channel...")
+	close(ch)
+
+	time.Sleep(time.Second * 2)
+}
+
+func MyServer() {
+
+	http.HandleFunc("/nebula/clusters/nebulatest/kubeconfig", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+		response := struct {
+			Message string
+			Data    string
+		}{
+			Message: "test",
+			Data:    "aaaa",
+		}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(jsonResponse)
+	})
+	go func() {
+		err := http.ListenAndServe(":16667", nil)
+		if err != nil {
+			fmt.Println("Start Nebula mock server failed...")
+			panic(err)
+		} else {
+			fmt.Println("Start Nebula mock server success...")
+			time.Sleep(50000 * time.Millisecond)
+		}
+
+	}()
 }

@@ -2,8 +2,15 @@ package base
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"reflect"
 	"sync"
+	"syscall"
+	"time"
 	_ "time"
+
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func TestGoRecv(ch chan int) int {
@@ -94,6 +101,9 @@ type person struct {
 	name string
 	age  int
 }
+type persons struct {
+	Ps []person
+}
 
 func newPerson(name string) *person {
 
@@ -115,6 +125,7 @@ func TestStructInitialize() {
 		s   person
 		spp person
 	)
+
 	fmt.Println(person{"Bob", 20})
 
 	fmt.Println(person{name: "Alice", age: 30})
@@ -152,5 +163,102 @@ func TestStructInitialize() {
 	fmt.Println(pri2)
 	(*pri3)[2] = 1111
 	fmt.Println(pri2)
+	ps := persons{}
+	fmt.Println("append info:%+v, %+v, %+v", ps, len(ps.Ps), ps.Ps == nil)
 
+	ps.Ps = append(ps.Ps, person{
+		name: "aa",
+		age:  33,
+	})
+
+	fmt.Println("append info:%+v.", ps)
+
+}
+
+func TestArray() {
+	//a := []string{}
+	var a []string
+	a = append(a, "aa")
+	var arrb []string
+	for _, s := range a {
+		fmt.Println("result: ", s)
+	}
+	arrb = a
+	a[0] = "dd"
+	arrb = append(arrb, "mmm")
+	for _, s := range a {
+		fmt.Println("new resulta: ", s)
+	}
+
+	//copy(arrb, a)
+	for _, s := range arrb {
+		fmt.Println("new resultb: ", s)
+	}
+
+	copy(a, arrb)
+	for _, s := range a {
+		fmt.Println("new resulta: ", s)
+	}
+
+	b := []person{
+		{
+			name: "a",
+			age:  22,
+		},
+		{
+			name: "b",
+			age:  23,
+		},
+	}
+
+	c := []person{
+		{
+			name: "a",
+			age:  22,
+		},
+		{
+			name: "b",
+			age:  24,
+		},
+	}
+
+	d := map[string]string{
+		"a": "b",
+		"c": "d",
+		"m": "n",
+	}
+
+	e := map[string]string{
+		"a": "b",
+		"c": "d",
+	}
+
+	fmt.Println("Equal check:", reflect.DeepEqual(b, c), reflect.DeepEqual(d, e))
+
+}
+
+func TestRepeat() {
+
+	stop := make(chan struct{})
+	// Define a function to be executed.
+	fn := func() {
+		// Do something.
+		fmt.Println("Hello, world!")
+	}
+
+	fn2 := func() {
+		// Do something.
+		fmt.Println("Hello, world222!")
+	}
+	// Wait until the condition is met or the duration has elapsed.
+	go wait.Until(fn, 3*time.Second, stop)
+	go wait.Until(fn2, 3*time.Second, stop)
+
+	fmt.Println("Waiting for stop signals...")
+	// Wait for all goroutines to finish.
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	<-sigs
+	close(stop)
+	time.Sleep(2 * time.Second)
 }

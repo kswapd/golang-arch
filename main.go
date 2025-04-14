@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"golang-arch/etcdraft"
+	"golang-arch/graphics"
 	_ "golang-arch/httpclient"
 )
 
@@ -19,7 +19,7 @@ func main() {
 	time.Sleep(time.Second * 3)
 	close(c)
 
-	base.TestStructInitialize()
+
 	base.TestChanSend3()*/
 	//proxy.ProxyHttp()
 	//base.GoStructValue()
@@ -34,7 +34,24 @@ func main() {
 	//base.MyEmbeddedStruct()
 	//base.MyGoroutine()
 	//base.MySlice2()
-	etcdraft.MyRaft()
+	//etcdraft.MyRaft()
+	//base.RbTest()
+	//base.TestChanClose()
+	//base.TestArray()
+	//base.TestRepeat()
+	//base.NacosClientTest()
+	//sql.SqlTest()
+	//base.TestStructInitialize()
+	//base.StartMyHttpServer()
+	//base.StartMySignal()
+	//math.StartMyPiCalc()
+
+	//ut.StartMyUT()
+	//db.StartMysqlServer()
+	//base.Marshal()
+	//base.MyServer()
+	graphics.Paint3D()
+	//time.Sleep(50000 * time.Millisecond)
 	fmt.Println("finished. ")
 
 }
