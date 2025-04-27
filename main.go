@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"golang-arch/graphics"
+	"golang-arch/gui"
 	_ "golang-arch/httpclient"
+	"golang-arch/srcc"
 )
 
 func main() {
@@ -50,7 +51,9 @@ func main() {
 	//db.StartMysqlServer()
 	//base.Marshal()
 	//base.MyServer()
-	graphics.Paint3D()
+	//graphics.Paint3D()
+	srcc.MyCallC()
+	gui.MyGui()
 	//time.Sleep(50000 * time.Millisecond)
 	fmt.Println("finished. ")
 
