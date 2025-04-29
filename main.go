@@ -2,9 +2,11 @@ package main
 
 import (
 	"fmt"
-	"golang-arch/gui"
+	_ "golang-arch/gui"
 	_ "golang-arch/httpclient"
-	"golang-arch/srcc"
+	_ "golang-arch/srcc"
+	"golang-arch/srccpp"
+	"golang-arch/srcobjc"
 )
 
 func main() {
@@ -52,8 +54,11 @@ func main() {
 	//base.Marshal()
 	//base.MyServer()
 	//graphics.Paint3D()
-	srcc.MyCallC()
-	gui.MyGui()
+	//srcc.MyCallC()
+	//gui.MyGui()
+	//base.WaitGoroutine()
+	srcobjc.MyObjectiveCMethod()
+	srccpp.CallCppClass()
 	//time.Sleep(50000 * time.Millisecond)
 	fmt.Println("finished. ")
 

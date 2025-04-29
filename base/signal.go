@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func StartMySignal() {
@@ -22,5 +23,23 @@ func StartMySignal() {
 
 	// Perform cleanup or graceful shutdown here
 	fmt.Println("Exiting...")
+
+}
+
+func WaitGoroutine() {
+
+	done := make(chan struct{})
+	//defer close(done)
+
+	go func() {
+		//time.Sleep(time.Second * 2)
+		fmt.Println("Goroutine done")
+		close(done)
+		//done <- struct{}{}
+	}()
+	time.Sleep(time.Second * 5)
+	<-done
+	// Perform cleanup or graceful shutdown here
+	fmt.Println("Exiting main routine...")
 
 }
