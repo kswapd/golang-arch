@@ -11,6 +11,7 @@ import (
 // #include "library-bridge.h"
 // If used above comment, should generate library first:
 // clang++ -o liblibrary.so library.cpp library-bridge.cpp -std=c++17 -O3 -Wall -Wextra -fPIC -shared
+// reference: https://stackoverflow.com/questions/1713214/how-to-use-c-in-go
 type Foo struct {
 	ptr unsafe.Pointer
 }
