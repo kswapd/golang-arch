@@ -4,9 +4,10 @@ import (
 	"fmt"
 	_ "golang-arch/gui"
 	_ "golang-arch/httpclient"
+	"golang-arch/mytools"
 	_ "golang-arch/srcc"
-	"golang-arch/srccpp"
-	"golang-arch/srcobjc"
+	_ "golang-arch/srccpp"
+	_ "golang-arch/srcobjc"
 )
 
 func main() {
@@ -57,9 +58,10 @@ func main() {
 	//srcc.MyCallC()
 	//gui.MyGui()
 	//base.WaitGoroutine()
-	srcobjc.MyObjectiveCMethod()
-	srccpp.CallCppClass()
+	//srcobjc.MyObjectiveCMethod()
+	//srccpp.CallCppClass()
 	//time.Sleep(50000 * time.Millisecond)
+	mytools.RunHtmlView()
 	fmt.Println("finished. ")
 
 }
