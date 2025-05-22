@@ -1,0 +1,12 @@
+h1 {
+    color: rgb(132, 237, 94);
+    font-size: 18px;
+}
+
+.output {
+    border-color: aqua;
+    border-radius: 2px;
+    border-style: solid;
+    width: 200px;
+    height: 100px;
+}
