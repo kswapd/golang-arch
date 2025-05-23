@@ -187,10 +187,15 @@ func CallAPI(method string, url string, headers map[string]string, body []byte) 
 	for key, value := range headers {
 		request.Header.Set(key, value)
 	}
-	client := &http.Client{}
+	//client := &http.Client{}
+	client := &http.Client{
+		Transport: &http.Transport{
+			Proxy: nil,
+		},
+	}
 	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
 		return nil, err
 	}
 	defer response.Body.Close()
