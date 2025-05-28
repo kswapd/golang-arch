@@ -165,9 +165,79 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
+type Page struct {
+	PageNo   int64 `json:"pageNo"`
+	PageSize int64 `json:"pageSize"`
+}
+type Entity struct {
+	ReqSourceCode string   `json:"reqSourceCode"`
+	BizDomain     string   `json:"bizDomain"`
+	OrgIdList     []string `json:"orgIdList"`
+}
+type LshmQueryInfo struct {
+	EntityQ Entity `json:"entity"`
+	PageQ   Page   `json:"page"`
+}
+
+func getLshmOrgInfo() {
+	log.Info("getLshmOrgInfo start")
+	url := "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+	url2 := "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+	url3 := "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+
+	url4 := "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x/person/queryPerson"
+	_ = url
+	_ = url2
+	_ = url3
+	_ = url4
+	h := map[string]string{
+		"accept":          "*/*",
+		"accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+		"appKey":          "68351dcc5d25bb1f1af25b23",
+	}
+	q := LshmQueryInfo{
+		EntityQ: Entity{
+			ReqSourceCode: "2011",
+			BizDomain:     "10",
+			OrgIdList: []string{
+				"900910566",
+				"900701733",
+			},
+		},
+		PageQ: Page{
+			PageNo:   1,
+			PageSize: 2,
+		},
+	}
+	//orgId":"900910566",
+	if qser, err := json.Marshal(q); err == nil {
+		/*if respData, err := CallAPI("POST", url, h, qser); err == nil {
+			str := string(respData)
+			log.Infof("Get org info success:\n%s", str)
+		} else {
+			log.Error(err)
+			return
+		}*/
+
+		if respData, err := CallAPI("POST", url4, h, qser); err == nil {
+			str := string(respData)
+			log.Infof("Get person info success:\n%s", str)
+		} else {
+			log.Error(err)
+			return
+		}
+
+	} else {
+		log.Error(err)
+	}
+
+	log.Info("getLshmOrgInfo finish")
+
+}
 func RunHtmlView() {
 	var port int = 8888
 	log.Infof("Starting server on :%d", port)
+	getLshmOrgInfo()
 	fs := http.FileServer(http.Dir(staticDir))
 	// Handle requests to the root path by serving files from the static directory.
 	http.Handle("/", fs)
