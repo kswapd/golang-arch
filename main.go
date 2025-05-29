@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	_ "golang-arch/httpclient"
-	"golang-arch/mytools"
+	"golang-arch/mmhm"
 )
 
 func main() {
@@ -57,7 +57,9 @@ func main() {
 	//srcobjc.MyObjectiveCMethod()
 	//srccpp.CallCppClass()
 	//time.Sleep(50000 * time.Millisecond)
-	mytools.RunHtmlView()
+	//mytools.RunHtmlView()
+
+	mmhm.RunGetMsg()
 	fmt.Println("finished. ")
 
 }

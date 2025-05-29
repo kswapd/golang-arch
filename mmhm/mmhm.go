@@ -1,4 +1,4 @@
-package mytools
+package mmhm
 
 import (
 	"bytes"
@@ -165,16 +165,79 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func RunHtmlView() {
-	var port int = 8888
-	log.Infof("Starting server on :%d", port)
-	fs := http.FileServer(http.Dir(staticDir))
-	// Handle requests to the root path by serving files from the static directory.
-	http.Handle("/", fs)
-	http.HandleFunc("/api/data", handleData)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
-		log.Fatal(err)
+type Page struct {
+	PageNo   int64 `json:"pageNo"`
+	PageSize int64 `json:"pageSize"`
+}
+type Entity struct {
+	ReqSourceCode string   `json:"reqSourceCode"`
+	BizDomain     string   `json:"bizDomain"`
+	OrgIdList     []string `json:"orgIdList"`
+}
+type LshmQueryInfo struct {
+	Entity `json:"entity"`
+	Page   `json:"page"`
+}
+type LshmQueryInfo22 struct {
+	Entity
+	Page
+}
+
+func getLshmOrgInfo() {
+	log.Info("getLshmOrgInfo start")
+	url := "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+	url2 := "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+	url3 := "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x/organization/queryOrg"
+	url4 := "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x/person/queryPerson"
+
+	h := map[string]string{
+		"accept":          "*/*",
+		"accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
+		"appKey":          "68351dcc5d25bb1f1af25b23",
 	}
+	q := LshmQueryInfo{
+		Entity: Entity{
+			ReqSourceCode: "2011",
+			BizDomain:     "10",
+		},
+		Page: Page{
+			PageNo:   200,
+			PageSize: 2,
+		},
+	}
+	_ = url
+	_ = url2
+	_ = url3
+	_ = url4
+	//orgId":"900910566",
+	if qser, err := json.Marshal(q); err == nil {
+		log.Info("qser:", string(qser))
+		if respData, err := CallAPI("POST", url, h, qser); err == nil {
+			str := string(respData)
+			log.Infof("Get org info success:\n %s", str)
+		} else {
+			log.Error(err)
+			return
+		}
+		/*if respData, err := CallAPI("POST", url4, h, qser); err == nil {
+			str := string(respData)
+			log.Infof("Get person info success:\n %s", str)
+		} else {
+			log.Error(err)
+			return
+		}*/
+
+	} else {
+		log.Error(err)
+	}
+
+	log.Info("getLshmOrgInfo finish")
+
+}
+func RunGetMsg() {
+	log.Infof("Starting server calls on")
+	getLshmOrgInfo()
+
 }
 
 func CallAPI(method string, url string, headers map[string]string, body []byte) ([]byte, error) {
