@@ -75,7 +75,7 @@ type LshmOrg struct {
 	ParentDepartmentId int64    `json:"parentDepartmentId"`
 	OrgLevel           string   `json:"orgLevel"`
 	TreeCode           string   `json:"treeCode"`
-	Childen            []string `json:"children"`
+	Children           []string `json:"children"`
 	BeisonOrgLevel     string   `json:"beisonOrgLevel"`
 }
 
@@ -151,7 +151,7 @@ func getLshmOrgInfo() ([]LshmOrg, error) {
 				return nil, err
 			} else {
 				allOrg = append(allOrg, resp.LshmOrgRespData.Records...)
-				log.Infof("Get org info:%+v", resp.LshmOrgRespData.Records)
+				//log.Infof("Get org info:%+v", resp.LshmOrgRespData.Records)
 				if resp.LshmOrgRespData.TotalPages > 1 {
 					for i := int64(2); i <= resp.LshmOrgRespData.TotalPages; i++ {
 						q.PageNo = i
@@ -316,10 +316,100 @@ func If(condition bool, trueVal, falseVal interface{}) interface{} {
 	}
 	return falseVal
 }
+
+// Define the tree structure with children field
+type LshmOrgTreeNode struct {
+	LshmOrg
+	Level    int
+	Children []*LshmOrgTreeNode
+}
+
+func ProcessOrgs(orgs []LshmOrg) ([]LshmOrg, error) {
+	orgMap := make(map[string]*LshmOrgTreeNode)
+
+	// Step 1: Initialize all nodes with Level = 0 (unassigned)
+	for _, org := range orgs {
+		orgMap[org.ID] = &LshmOrgTreeNode{
+			LshmOrg:  org,
+			Level:    0,
+			Children: []*LshmOrgTreeNode{},
+		}
+	}
+
+	// Step 2: Link children and build roots
+	roots := []*LshmOrgTreeNode{}
+
+	for id, node := range orgMap {
+		if parentNodeId := node.ParentId; parentNodeId != "" {
+			if parentNode, exists := orgMap[parentNodeId]; exists {
+				parentNode.LshmOrg.Children = append(parentNode.LshmOrg.Children, node.ID)
+				parentNode.Children = append(parentNode.Children, node)
+			} else {
+				//lshm use -2 as root id, we need to convert to -1 to be compatible with ml
+				log.Warnf("Parent not found for org %s with ParentId %s", id, parentNodeId)
+				node.ParentId = "-1"
+				roots = append(roots, node)
+			}
+		} else {
+			//Other node with empty parent id also treated as root id, todo.
+			node.ParentId = "-5"
+			roots = append(roots, node)
+		}
+	}
+
+	// Step 3: Assign levels using BFS
+	queue := make([]*LshmOrgTreeNode, 0)
+
+	// Set root level to 1
+	for _, root := range roots {
+		root.Level = 1
+		root.OrgLevel = strconv.Itoa(root.Level)
+		root.TreeCode = "/"
+		queue = append(queue, root)
+	}
+
+	for len(queue) > 0 {
+		current := queue[0]
+		queue = queue[1:]
+
+		for _, child := range current.Children {
+			child.Level = current.Level + 1
+			child.OrgLevel = strconv.Itoa(child.Level)
+			child.TreeCode = fmt.Sprintf("%s%s/", current.TreeCode, current.ID)
+			queue = append(queue, child)
+		}
+	}
+
+	//flatten tree by bfs
+	var result []LshmOrg
+	var queue2 []*LshmOrgTreeNode
+
+	// Initialize queue with roots
+	for _, root := range roots {
+		queue2 = append(queue2, root)
+	}
+
+	// BFS traversal
+	for len(queue2) > 0 {
+		current := queue2[0]
+		queue2 = queue2[1:]
+		result = append(result, current.LshmOrg)
+		queue2 = append(queue2, current.Children...)
+	}
+	return result, nil
+
+}
 func RunGetMsg() error {
 	log.Infof("Starting org sync....")
 	startTime := time.Now()
-	orgs, _ := getLshmOrgInfo()
+	orgsTmp, _ := getLshmOrgInfo()
+	var orgs []LshmOrg
+	var err error
+
+	if orgs, err = ProcessOrgs(orgsTmp); err != nil {
+		log.Errorf("ProcessOrgs error: %s", err)
+	}
+
 	var minParOrgId = int64(100)
 	var maxParOrgId = int64(-100)
 
