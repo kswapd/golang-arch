@@ -3,10 +3,10 @@ package mmhm
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -14,9 +14,18 @@ import (
 )
 
 const (
-	MessageTypeSuccess = "1000"
-	MessageTypeERROR   = "9999"
-	CurrentVersion     = "1.0.0"
+	MessageTypeSuccess    = "1000"
+	MessageTypeERROR      = "9999"
+	CurrentVersion        = "1.0.0"
+	base                  = 10
+	bitSize               = 64
+	lshmDevUrlPrefix      = "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x"
+	lshmPreUrlPrefix      = "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x"
+	lshmPrdUrlPrefix      = "https://ipaas-gw.hnlshm.com/restcloud/user_center/apiV2/person2x"
+	lshmAppHeaderKey      = "appKey"
+	lshmDevAppHeaderValue = "68351dcc5d25bb1f1af25b23"
+	lshmOrgAPIUri         = "/organization/queryOrg"
+	lshmPersonAPIUri      = "/person/queryPerson"
 )
 
 type Data struct {
@@ -34,156 +43,213 @@ var (
 	ConstPublicErr         = Data{MessageType: MessageTypeERROR, Version: CurrentVersion, ErrInfo: "Unknown Error"}
 )
 
-type GoldenTD struct {
-	Name      string  `json:"name"`
-	TradeTime float64 `json:"tradeTime"`
-	ReqTime   int64   `json:"reqTime"`
-	Price     float64 `json:"price"`
-	Unit      string  `json:"unit"`
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-
-	/*tmpl, err := template.ParseFiles(fmt.Sprintf("%s%s", staticPath, portalIndex))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}*/
-
-	// Create a file server handler for the specified directory.
-	//staticDir := fmt.Sprintf("%s%s", staticPath, portalIndex)
-	fs := http.FileServer(http.Dir(staticDir))
-
-	// Handle requests to the root path by serving files from the static directory.
-	http.Handle("/", fs)
-}
-
-func currentMilliseconds() (int64, string) {
-	cTime := time.Now()
-	nano := cTime.UnixNano()
-	t := time.Unix(0, nano)
-	tStr := t.Format(time.DateTime) // "2006" is the reference year in Go's time formatting
-	_, offsetSec := cTime.Zone()
-	//log.Infof("Offset: %+03d:%02d\n", offsetHours, offsetMinutes)
-	timeStr := fmt.Sprintf("%s %+03d:%02d\n", tStr, offsetSec/3600, (offsetSec%3600)/60)
-	log.Infof("time:%d, %s", nano/1e6, timeStr)
-	return nano / 1e6, timeStr
-}
-
-func getGoldTD() (*GoldenTD, error) {
-	milSec, _ := currentMilliseconds()
-	url := fmt.Sprintf("https://api.jijinhao.com/quoteCenter/realTime.htm?codes=JO_9753&_=%d", milSec)
-	h := map[string]string{
-		"accept":                   "*/*",
-		"accept-language":          "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,zh-TW;q=0.6",
-		"referer":                  "https://quote.cngold.org/'",
-		"sec-fetch-dest":           "script",
-		"sec-fetch-mode":           "no-cors",
-		"sec-fetch-site":           "cross-site",
-		"sec-fetch-storage-access": "active",
-		"user-agent":               "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
-	}
-	if respData, err := CallAPI("GET", url, h, nil); err == nil {
-		str := string(respData)
-		log.Infof("Get response success:%s", str)
-		targetStr := "var quote_json = "
-		if strings.Contains(str, targetStr) {
-			jsonMsg := str[strings.Index(str, targetStr)+len(targetStr):]
-			var data map[string]interface{}
-			err := json.Unmarshal([]byte(jsonMsg), &data)
-			if err != nil {
-				log.Error(err)
-				return nil, err
-			}
-
-			JO_9753 := data["JO_9753"].(map[string]interface{})
-
-			tdTime := JO_9753["time"].(float64)
-			tdPrice := JO_9753["q63"].(float64)
-			tdName := JO_9753["showName"].(string)
-			unit := JO_9753["unit"].(string)
-			return &GoldenTD{
-				TradeTime: tdTime,
-				Price:     tdPrice,
-				Name:      tdName,
-				ReqTime:   milSec,
-				Unit:      unit,
-			}, nil
-		} else {
-			errMsg := fmt.Sprintf("Can not find target string to convert to json, return data: %s", str)
-			log.Error(errMsg)
-			return nil, errors.New(errMsg)
-		}
-	} else {
-		log.Error(err)
-		return nil, err
-
-	}
-}
-
-func handleData(w http.ResponseWriter, r *http.Request) {
-
-	if r.Method == http.MethodGet {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		if respData, err := getGoldTD(); err == nil {
-			_, timeStr := currentMilliseconds()
-			log.Infof("Get getGoldTD success:%v", respData)
-			retData := Data{
-				MessageType: MessageTypeSuccess,
-				Version:     CurrentVersion,
-				Body:        respData,
-				Time:        timeStr,
-			}
-			srcMsg, err := json.Marshal(retData)
-			if err != nil {
-				log.Error(err)
-				curErr := ConstPublicErr
-				curErr.Time = timeStr
-				curErr.ErrInfo = err.Error()
-				curErrMsgByte, _ := json.Marshal(curErr)
-				w.Write(curErrMsgByte)
-			} else {
-				w.Write(srcMsg)
-			}
-		} else {
-			_, timeStr := currentMilliseconds()
-			log.Error(err)
-			curErr := ConstPublicErr
-			curErr.Time = timeStr
-			curErr.ErrInfo = err.Error()
-			curErrMsgByte, _ := json.Marshal(curErr)
-			w.Write(curErrMsgByte)
-		}
-	}
-	return
-}
-
 type Page struct {
-	PageNo   int64 `json:"pageNo"`
-	PageSize int64 `json:"pageSize"`
+	PageNo      int64    `json:"pageNo"`
+	PageSize    int64    `json:"pageSize"`
+	OrderFields []string `json:"orderFields"`
+	Order       string   `json:"order"`
+	AutoCount   bool     `json:"autoCount"`
+	TotalCount  int64    `json:"totalCount"`
+	TotalPages  int64    `json:"totalPages"`
 }
-type Entity struct {
+type QueryEntity struct {
 	ReqSourceCode string   `json:"reqSourceCode"`
 	BizDomain     string   `json:"bizDomain"`
 	OrgIdList     []string `json:"orgIdList"`
 }
 type LshmQueryInfo struct {
-	Entity `json:"entity"`
-	Page   `json:"page"`
-}
-type LshmQueryInfo22 struct {
-	Entity
-	Page
+	QueryEntity `json:"entity"`
+	Page        `json:"page"`
 }
 
-func getLshmOrgInfo() {
+type LshmOrg struct {
+	ID                 string   `json:"id"`
+	BizDomain          string   `json:"bizDomain"`
+	BelongBrand        string   `json:"belongBrand"`
+	Code               string   `json:"code"`
+	OrgName            string   `json:"orgName"`
+	IsEnable           int      `json:"isEnable"`
+	OrgType            string   `json:"orgType"`
+	ParentId           string   `json:"parentId"`
+	DepartmentId       string   `json:"departmentId"`
+	ParentDepartmentId int64    `json:"parentDepartmentId"`
+	OrgLevel           string   `json:"orgLevel"`
+	TreeCode           string   `json:"treeCode"`
+	Childen            []string `json:"children"`
+	BeisonOrgLevel     string   `json:"beisonOrgLevel"`
+}
+
+type LshmPerson struct {
+	UserId           string `json:"userId"`
+	RealName         string `json:"realName"`
+	Phone            string `json:"phone"`
+	ThirdUid         string `json:"thirdUid"`
+	Email            string `json:"email"`
+	UserStatus       string `json:"userStatus"`
+	Sex              string `json:"sex"`
+	DirectLeaderId   int64  `json:"directLeaderId"`
+	DirectLeaderName string `json:"directLeaderName"`
+	Code             string `json:"code"`
+	//JobInfoList      string `json:"jobInfoList"`
+}
+
+type LshmOrgRespData struct {
+	Page
+	Records []LshmOrg `json:"records"`
+}
+type LshmOrgRespInfo struct {
+	RespCode        string `json:"respCode"`
+	RespMsg         string `json:"respMsg"`
+	LshmOrgRespData `json:"data"`
+}
+
+type LshmPersonRespData struct {
+	Page
+	Records []LshmPerson `json:"records"`
+}
+type LshmPersonRespInfo struct {
+	RespCode           string `json:"respCode"`
+	RespMsg            string `json:"respMsg"`
+	LshmPersonRespData `json:"data"`
+}
+
+func getLshmOrgInfo() ([]LshmOrg, error) {
+
+	var defaultPageSize int64 = 100
+	reqSourceCode := "2011"
+	bizDomain := "10"
+	reqUrl := fmt.Sprintf("%s%s", lshmDevUrlPrefix, lshmOrgAPIUri)
+	log.Infof("getLshmOrgInfo:%s", reqUrl)
+	h := map[string]string{
+		"accept":         "*/*",
+		lshmAppHeaderKey: lshmDevAppHeaderValue,
+	}
+	q := LshmQueryInfo{
+		QueryEntity: QueryEntity{
+			ReqSourceCode: reqSourceCode,
+			BizDomain:     bizDomain,
+		},
+		Page: Page{
+			PageNo:   1,
+			PageSize: defaultPageSize,
+		},
+	}
+	if qm, err := json.Marshal(q); err != nil {
+		log.Errorf("getLshmOrgInfo, error: %s", err)
+		return nil, err
+	} else {
+		if respData, err := CallAPI("POST", reqUrl, h, qm); err != nil {
+			log.Errorf("getLshmOrgInfo, error: %s", err)
+			return nil, err
+		} else {
+			//str := string(respData)
+			log.Infof("Get lshm org info success, data len: %d", len(respData))
+			resp := LshmOrgRespInfo{}
+			allOrg := make([]LshmOrg, 0)
+			if err := json.Unmarshal(respData, &resp); err != nil {
+				log.Errorf("getLshmOrgInfo, error: %s", err)
+				return nil, err
+			} else {
+				allOrg = append(allOrg, resp.LshmOrgRespData.Records...)
+				log.Infof("Get org info:%+v", resp.LshmOrgRespData.Records)
+				if resp.LshmOrgRespData.TotalPages > 1 {
+					for i := int64(2); i <= resp.LshmOrgRespData.TotalPages; i++ {
+						q.PageNo = i
+						qm, _ = json.Marshal(q)
+						if respData, err := CallAPI("POST", reqUrl, h, qm); err != nil {
+							log.Error("getLshmOrgInfo, %d, error: %s", i, err)
+							return nil, err
+						} else {
+							//str := string(respData)
+							log.Infof("Get lshm org info success, data len: %d, %d", i, len(respData))
+							if err := json.Unmarshal(respData, &resp); err != nil {
+								log.Errorf("getLshmOrgInfo, error: %s", err)
+								return nil, err
+							} else {
+								//log.Infof("Get org info success:\n %+v", resp)
+								allOrg = append(allOrg, resp.LshmOrgRespData.Records...)
+							}
+
+						}
+					}
+
+				}
+				return allOrg, nil
+			}
+
+		}
+	}
+
+}
+
+func getLshmPersonInfo() ([]LshmPerson, error) {
+
+	var defaultPageSize int64 = 100
+	reqSourceCode := "2011"
+	bizDomain := "10"
+	reqUrl := fmt.Sprintf("%s%s", lshmDevUrlPrefix, lshmPersonAPIUri)
+	log.Infof("getLshmPersonInfo:%s", reqUrl)
+	h := map[string]string{
+		"accept":         "*/*",
+		lshmAppHeaderKey: lshmDevAppHeaderValue,
+	}
+	q := LshmQueryInfo{
+		QueryEntity: QueryEntity{
+			ReqSourceCode: reqSourceCode,
+			BizDomain:     bizDomain,
+		},
+		Page: Page{
+			PageNo:   1,
+			PageSize: defaultPageSize,
+		},
+	}
+	if qm, err := json.Marshal(q); err != nil {
+		log.Errorf("getLshmPersonInfo, error: %s", err)
+		return nil, err
+	} else {
+		if respData, err := CallAPI("POST", reqUrl, h, qm); err != nil {
+			log.Errorf("getLshmPersonInfo, error: %s", err)
+			return nil, err
+		} else {
+			//str := string(respData)
+			log.Infof("Get lshm person info success, data len: %d", len(respData))
+			resp := LshmPersonRespInfo{}
+			allPerson := make([]LshmPerson, 0)
+			if err := json.Unmarshal(respData, &resp); err != nil {
+				log.Errorf("getLshmPersonInfo, error: %s", err)
+				return nil, err
+			} else {
+				allPerson = append(allPerson, resp.LshmPersonRespData.Records...)
+				if resp.LshmPersonRespData.TotalPages > 1 {
+					for i := int64(2); i <= resp.LshmPersonRespData.TotalPages; i++ {
+						q.PageNo = i
+						qm, _ = json.Marshal(q)
+						if respData, err := CallAPI("POST", reqUrl, h, qm); err != nil {
+							log.Errorf("getLshmPersonInfo, %d, error: %s", i, err)
+							return nil, err
+						} else {
+							//str := string(respData)
+							log.Infof("Get lshm person info success, data len: %d,%d", i, len(respData))
+							if err := json.Unmarshal(respData, &resp); err != nil {
+								log.Errorf("getLshmPersonInfo, error: %s", err)
+								return nil, err
+							} else {
+								allPerson = append(allPerson, resp.LshmPersonRespData.Records...)
+							}
+
+						}
+					}
+
+				}
+				return allPerson, nil
+			}
+
+		}
+	}
+
+}
+
+func getLshmOrgInfobk() {
 	log.Info("getLshmOrgInfo start")
 	url := "http://47.97.217.191:8080/restcloud/user_center/apiV2/person2x/organization/queryOrg"
 	url2 := "https://ipaas-pre-gw.hnlshm.com/restcloud/user_center/apiV2/person2x/organization/queryOrg"
@@ -196,7 +262,7 @@ func getLshmOrgInfo() {
 		"appKey":          "68351dcc5d25bb1f1af25b23",
 	}
 	q := LshmQueryInfo{
-		Entity: Entity{
+		QueryEntity: QueryEntity{
 			ReqSourceCode: "2011",
 			BizDomain:     "10",
 		},
@@ -215,6 +281,15 @@ func getLshmOrgInfo() {
 		if respData, err := CallAPI("POST", url, h, qser); err == nil {
 			str := string(respData)
 			log.Infof("Get org info success:\n %s", str)
+
+			resp := LshmOrgRespInfo{}
+			//allOrg := make([]LshmOrg, 0)
+			if err := json.Unmarshal(respData, &resp); err != nil {
+				log.Errorf("getLshmOrgInfo Unmarshal error: %s", err)
+			} else {
+				log.Infof("Get org info success:\n %+v", resp)
+			}
+
 		} else {
 			log.Error(err)
 			return
@@ -234,9 +309,79 @@ func getLshmOrgInfo() {
 	log.Info("getLshmOrgInfo finish")
 
 }
-func RunGetMsg() {
-	log.Infof("Starting server calls on")
-	getLshmOrgInfo()
+
+func If(condition bool, trueVal, falseVal interface{}) interface{} {
+	if condition {
+		return trueVal
+	}
+	return falseVal
+}
+func RunGetMsg() error {
+	log.Infof("Starting org sync....")
+	startTime := time.Now()
+	orgs, _ := getLshmOrgInfo()
+	var minParOrgId = int64(100)
+	var maxParOrgId = int64(-100)
+
+	var minOrgId = int64(10000000)
+	var maxOrgId = int64(-100)
+
+	var minOrgLevel = int64(100)
+	var maxOrgLevel = int64(-100)
+	for _, org := range orgs {
+		numId, err := strconv.ParseInt(org.ID, 10, 64)
+		if err != nil {
+			//log.Errorf("Error converting org.ID: %s to int64, %s, %+v", org.ID, err, org)
+			continue
+			//return err
+			//numId =
+		} else {
+			minOrgId = If(numId < minOrgId, numId, minOrgId).(int64)
+			maxOrgId = If(numId > maxOrgId, numId, maxOrgId).(int64)
+		}
+		numParentId, err := strconv.ParseInt(org.ParentId, 10, 64)
+		if err != nil {
+			log.Errorf("Error converting org.ParentId: %s to int64, %s, %+v", org.ParentId, err, org)
+			continue
+			//return err
+		} else {
+			minParOrgId = If(numParentId < minParOrgId, numParentId, minParOrgId).(int64)
+			maxParOrgId = If(numParentId > maxParOrgId, numParentId, maxParOrgId).(int64)
+		}
+		orgLevel, err := strconv.ParseInt(org.OrgLevel, 10, 64)
+		if err != nil {
+			log.Errorf("Error converting org.OrgLevel: %s to int64, %s, %+v", org.OrgLevel, err, org)
+			continue
+		} else {
+			minOrgLevel = If(orgLevel < minOrgLevel, orgLevel, minOrgLevel).(int64)
+			maxOrgLevel = If(orgLevel > maxOrgLevel, orgLevel, maxOrgLevel).(int64)
+		}
+
+		if strings.Contains(org.TreeCode, "null") {
+			log.Infof("org.TreeCode contains null: %+v", org)
+		}
+
+		if orgLevel == 14 {
+			log.Infof("level 14: %+v", org)
+		}
+		if numId == 539753 {
+			log.Infof("org 539753: %+v", org)
+		}
+
+		if numParentId < 0 {
+			log.Infof("numParentId < 0: %+v", org)
+		}
+	}
+	elapsedTime := time.Since(startTime)
+	log.Infof("Finish org sync len:%d, %v", len(orgs), elapsedTime)
+	log.Infof("Finish org stat: parent org:(%d, %d), org:(%d, %d), level:(%d, %d)", minParOrgId, maxParOrgId, minOrgId, maxOrgId, minOrgLevel, maxOrgLevel)
+	return nil
+
+	/*log.Infof("Starting person sync....")
+	startTime2 := time.Now()
+	b, _ := getLshmPersonInfo()
+	elapsedTime2 := time.Since(startTime2)
+	log.Infof("Finish person sync len:%d, %v", len(b), elapsedTime2)*/
 
 }
 
