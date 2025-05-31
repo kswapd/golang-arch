@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -78,19 +77,40 @@ type LshmOrg struct {
 	Children           []string `json:"children"`
 	BeisonOrgLevel     string   `json:"beisonOrgLevel"`
 }
-
+type JobInfo struct {
+	Id              string `json:"id"`
+	UserId          string `json:"userId"`
+	BizDomain       string `json:"bizDomain"`
+	BelongBrand     string `json:"belongBrand"`
+	JobPostCode     string `json:"jobPostCode"`
+	JobPostName     string `json:"jobPostName"`
+	JobStatus       string `json:"jobStatus"`
+	MainWork        string `json:"mainWork"`
+	IsAgentMgm      string `json:"isAgentMgm"`
+	JobPostId       string `json:"jobPostId"`
+	StartWorkDay    string `json:"startWorkDay"`
+	EndWorkDay      string `json:"endWorkDay"`
+	IsActuralMgm    string `json:"isActuralMgm"`
+	OrgName         string `json:"orgName"`
+	OrgId           string `json:"orgId"`
+	Code            string `json:"code"`
+	AddrProvince    string `json:"addrProvince"`
+	AddrCity        string `json:"addrCity"`
+	AddrArea        string `json:"addrArea"`
+	BelongBrandName string `json:"belongBrandName"`
+}
 type LshmPerson struct {
-	UserId           string `json:"userId"`
-	RealName         string `json:"realName"`
-	Phone            string `json:"phone"`
-	ThirdUid         string `json:"thirdUid"`
-	Email            string `json:"email"`
-	UserStatus       string `json:"userStatus"`
-	Sex              string `json:"sex"`
-	DirectLeaderId   int64  `json:"directLeaderId"`
-	DirectLeaderName string `json:"directLeaderName"`
-	Code             string `json:"code"`
-	//JobInfoList      string `json:"jobInfoList"`
+	UserId           string    `json:"userId"`
+	RealName         string    `json:"realName"`
+	Phone            string    `json:"phone"`
+	ThirdUid         string    `json:"thirdUid"`
+	Email            string    `json:"email"`
+	UserStatus       string    `json:"userStatus"`
+	Sex              string    `json:"sex"`
+	DirectLeaderId   int64     `json:"directLeaderId"`
+	DirectLeaderName string    `json:"directLeaderName"`
+	Code             string    `json:"code"`
+	JobInfoList      []JobInfo `json:"jobInfoList"`
 }
 
 type LshmOrgRespData struct {
@@ -220,6 +240,11 @@ func getLshmPersonInfo() ([]LshmPerson, error) {
 				return nil, err
 			} else {
 				allPerson = append(allPerson, resp.LshmPersonRespData.Records...)
+
+				//log.Infof("Get person info:%+v", resp.LshmPersonRespData.Records)
+				for _, person := range resp.LshmPersonRespData.Records {
+					log.Infof("Get person info:%+v", person)
+				}
 				if resp.LshmPersonRespData.TotalPages > 1 {
 					for i := int64(2); i <= resp.LshmPersonRespData.TotalPages; i++ {
 						q.PageNo = i
@@ -351,7 +376,7 @@ func ProcessOrgs(orgs []LshmOrg) ([]LshmOrg, error) {
 				roots = append(roots, node)
 			}
 		} else {
-			//Other node with empty parent id also treated as root id, todo.
+			//Other nodes with empty parent id also treated as root id, todo.
 			node.ParentId = "-5"
 			roots = append(roots, node)
 		}
@@ -401,7 +426,7 @@ func ProcessOrgs(orgs []LshmOrg) ([]LshmOrg, error) {
 }
 func RunGetMsg() error {
 	log.Infof("Starting org sync....")
-	startTime := time.Now()
+	/*startTime := time.Now()
 	orgsTmp, _ := getLshmOrgInfo()
 	var orgs []LshmOrg
 	var err error
@@ -410,6 +435,7 @@ func RunGetMsg() error {
 		log.Errorf("ProcessOrgs error: %s", err)
 	}
 
+	log.Infof("orgs len--------:%d, %d", len(orgsTmp), len(orgs))
 	var minParOrgId = int64(100)
 	var maxParOrgId = int64(-100)
 
@@ -461,17 +487,21 @@ func RunGetMsg() error {
 		if numParentId < 0 {
 			log.Infof("numParentId < 0: %+v", org)
 		}
+		if org.ID == "900910966" {
+			log.Infof("org 900910966: %+v", org)
+		}
 	}
 	elapsedTime := time.Since(startTime)
 	log.Infof("Finish org sync len:%d, %v", len(orgs), elapsedTime)
 	log.Infof("Finish org stat: parent org:(%d, %d), org:(%d, %d), level:(%d, %d)", minParOrgId, maxParOrgId, minOrgId, maxOrgId, minOrgLevel, maxOrgLevel)
-	return nil
+	return nil*/
 
-	/*log.Infof("Starting person sync....")
+	log.Infof("Starting person sync....")
 	startTime2 := time.Now()
 	b, _ := getLshmPersonInfo()
 	elapsedTime2 := time.Since(startTime2)
-	log.Infof("Finish person sync len:%d, %v", len(b), elapsedTime2)*/
+	log.Infof("Finish person sync len:%d, %v", len(b), elapsedTime2)
+	return nil
 
 }
 
