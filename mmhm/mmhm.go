@@ -7,7 +7,6 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -431,82 +430,84 @@ func ProcessOrgs(orgs []LshmOrg) ([]LshmOrg, error) {
 }
 func RunGetMsg() error {
 	log.Infof("Starting org sync....")
-	startTime := time.Now()
-	orgsTmp, _ := getLshmOrgInfo()
-	var orgs []LshmOrg
-	var err error
+	/*
+		startTime := time.Now()
+		orgsTmp, _ := getLshmOrgInfo()
+		var orgs []LshmOrg
+		var err error
 
-	if orgs, err = ProcessOrgs(orgsTmp); err != nil {
-		log.Errorf("ProcessOrgs error: %s", err)
-	}
-
-	log.Infof("orgs len--------:%d, %d", len(orgsTmp), len(orgs))
-	var minParOrgId = int64(100)
-	var maxParOrgId = int64(-100)
-
-	var minOrgId = int64(10000000)
-	var maxOrgId = int64(-100)
-
-	var minOrgLevel = int64(100)
-	var maxOrgLevel = int64(-100)
-	for _, org := range orgs {
-		numId, err := strconv.ParseInt(org.ID, 10, 64)
-		if err != nil {
-			//log.Errorf("Error converting org.ID: %s to int64, %s, %+v", org.ID, err, org)
-			continue
-			//return err
-			//numId =
-		} else {
-			minOrgId = If(numId < minOrgId, numId, minOrgId).(int64)
-			maxOrgId = If(numId > maxOrgId, numId, maxOrgId).(int64)
-		}
-		numParentId, err := strconv.ParseInt(org.ParentId, 10, 64)
-		if err != nil {
-			log.Errorf("Error converting org.ParentId: %s to int64, %s, %+v", org.ParentId, err, org)
-			continue
-			//return err
-		} else {
-			minParOrgId = If(numParentId < minParOrgId, numParentId, minParOrgId).(int64)
-			maxParOrgId = If(numParentId > maxParOrgId, numParentId, maxParOrgId).(int64)
-		}
-		orgLevel, err := strconv.ParseInt(org.OrgLevel, 10, 64)
-		if err != nil {
-			log.Errorf("Error converting org.OrgLevel: %s to int64, %s, %+v", org.OrgLevel, err, org)
-			continue
-		} else {
-			minOrgLevel = If(orgLevel < minOrgLevel, orgLevel, minOrgLevel).(int64)
-			maxOrgLevel = If(orgLevel > maxOrgLevel, orgLevel, maxOrgLevel).(int64)
+		if orgs, err = ProcessOrgs(orgsTmp); err != nil {
+			log.Errorf("ProcessOrgs error: %s", err)
 		}
 
-		if strings.Contains(org.TreeCode, "null") {
-			log.Infof("org.TreeCode contains null: %+v", org)
-		}
+		log.Infof("orgs len--------:%d, %d", len(orgsTmp), len(orgs))
+		var minParOrgId = int64(100)
+		var maxParOrgId = int64(-100)
 
-		if orgLevel == 14 {
-			log.Infof("level 14: %+v", org)
-		}
-		if numId == 539753 {
-			log.Infof("org 539753: %+v", org)
-		}
+		var minOrgId = int64(10000000)
+		var maxOrgId = int64(-100)
 
-		if numParentId < 0 {
-			log.Infof("numParentId < 0: %+v", org)
-		}
-		if org.ID == "900910966" {
-			log.Infof("org 900910966: %+v", org)
-		}
-	}
-	elapsedTime := time.Since(startTime)
-	log.Infof("Finish org sync len:%d, %v", len(orgs), elapsedTime)
-	log.Infof("Finish org stat: parent org:(%d, %d), org:(%d, %d), level:(%d, %d)", minParOrgId, maxParOrgId, minOrgId, maxOrgId, minOrgLevel, maxOrgLevel)
-	return nil
+		var minOrgLevel = int64(100)
+		var maxOrgLevel = int64(-100)
+		for _, org := range orgs {
+			numId, err := strconv.ParseInt(org.ID, 10, 64)
+			if err != nil {
+				//log.Errorf("Error converting org.ID: %s to int64, %s, %+v", org.ID, err, org)
+				continue
+				//return err
+				//numId =
+			} else {
+				minOrgId = If(numId < minOrgId, numId, minOrgId).(int64)
+				maxOrgId = If(numId > maxOrgId, numId, maxOrgId).(int64)
+			}
+			numParentId, err := strconv.ParseInt(org.ParentId, 10, 64)
+			if err != nil {
+				log.Errorf("Error converting org.ParentId: %s to int64, %s, %+v", org.ParentId, err, org)
+				continue
+				//return err
+			} else {
+				minParOrgId = If(numParentId < minParOrgId, numParentId, minParOrgId).(int64)
+				maxParOrgId = If(numParentId > maxParOrgId, numParentId, maxParOrgId).(int64)
+			}
+			orgLevel, err := strconv.ParseInt(org.OrgLevel, 10, 64)
+			if err != nil {
+				log.Errorf("Error converting org.OrgLevel: %s to int64, %s, %+v", org.OrgLevel, err, org)
+				continue
+			} else {
+				minOrgLevel = If(orgLevel < minOrgLevel, orgLevel, minOrgLevel).(int64)
+				maxOrgLevel = If(orgLevel > maxOrgLevel, orgLevel, maxOrgLevel).(int64)
+			}
 
-	/*log.Infof("Starting person sync....")
+			if strings.Contains(org.TreeCode, "null") {
+				log.Infof("org.TreeCode contains null: %+v", org)
+			}
+
+			if orgLevel == 14 {
+				log.Infof("level 14: %+v", org)
+			}
+			if numId == 539753 {
+				log.Infof("org 539753: %+v", org)
+			}
+
+			if numParentId < 0 {
+				log.Infof("numParentId < 0: %+v", org)
+			}
+			if org.ID == "900910966" {
+				log.Infof("org 900910966: %+v", org)
+			}
+		}
+		elapsedTime := time.Since(startTime)
+		log.Infof("Finish org sync len:%d, %v", len(orgs), elapsedTime)
+		log.Infof("Finish org stat: parent org:(%d, %d), org:(%d, %d), level:(%d, %d)", minParOrgId, maxParOrgId, minOrgId, maxOrgId, minOrgLevel, maxOrgLevel)
+		return nil
+	*/
+
+	log.Infof("Starting person sync....")
 	startTime2 := time.Now()
 	b, _ := getLshmPersonInfo()
 	elapsedTime2 := time.Since(startTime2)
 	log.Infof("Finish person sync len:%d, %v", len(b), elapsedTime2)
-	return nil*/
+	return nil
 
 }
 
