@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -137,7 +138,7 @@ func getLshmOrgInfo() ([]LshmOrg, error) {
 
 	var defaultPageSize int64 = 100
 	reqSourceCode := "2011"
-	bizDomain := "10"
+	bizDomain := "20"
 	reqUrl := fmt.Sprintf("%s%s", lshmDevUrlPrefix, lshmOrgAPIUri)
 	log.Infof("getLshmOrgInfo:%s", reqUrl)
 	h := map[string]string{
@@ -172,12 +173,16 @@ func getLshmOrgInfo() ([]LshmOrg, error) {
 			} else {
 				allOrg = append(allOrg, resp.LshmOrgRespData.Records...)
 				//log.Infof("Get org info:%+v", resp.LshmOrgRespData.Records)
+				for _, org := range resp.LshmOrgRespData.Records {
+					log.Infof("Get org info:%+v", org)
+				}
 				if resp.LshmOrgRespData.TotalPages > 1 {
 					for i := int64(2); i <= resp.LshmOrgRespData.TotalPages; i++ {
 						q.PageNo = i
 						qm, _ = json.Marshal(q)
 						if respData, err := CallAPI("POST", reqUrl, h, qm); err != nil {
 							log.Error("getLshmOrgInfo, %d, error: %s", i, err)
+
 							return nil, err
 						} else {
 							//str := string(respData)
@@ -426,7 +431,7 @@ func ProcessOrgs(orgs []LshmOrg) ([]LshmOrg, error) {
 }
 func RunGetMsg() error {
 	log.Infof("Starting org sync....")
-	/*startTime := time.Now()
+	startTime := time.Now()
 	orgsTmp, _ := getLshmOrgInfo()
 	var orgs []LshmOrg
 	var err error
@@ -494,14 +499,14 @@ func RunGetMsg() error {
 	elapsedTime := time.Since(startTime)
 	log.Infof("Finish org sync len:%d, %v", len(orgs), elapsedTime)
 	log.Infof("Finish org stat: parent org:(%d, %d), org:(%d, %d), level:(%d, %d)", minParOrgId, maxParOrgId, minOrgId, maxOrgId, minOrgLevel, maxOrgLevel)
-	return nil*/
+	return nil
 
-	log.Infof("Starting person sync....")
+	/*log.Infof("Starting person sync....")
 	startTime2 := time.Now()
 	b, _ := getLshmPersonInfo()
 	elapsedTime2 := time.Since(startTime2)
 	log.Infof("Finish person sync len:%d, %v", len(b), elapsedTime2)
-	return nil
+	return nil*/
 
 }
 
