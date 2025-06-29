@@ -3,20 +3,25 @@
 
 <head>
     <title>Static Website</title>
-    <script src="js/my.js"></script>
-    <link rel="stylesheet" type="text/css" href="css/my.css">
+    <script src="js/vue.js"></script>
+    <link rel="stylesheet" href="js/index.css">
 </head>
 
 <body>
     <h1>Personal First Page</h1>
+    <div id="app">
+        {{ message }}
+    </div>
+
+    <div id="app-2">
+        <span v-bind:title="message">
+            Hover your mouse over me for a few seconds
+            to see my dynamically bound title!
+        </span>
+    </div>
+
+
+    <script src="js/index.js"></script>
 </body>
-<button onclick="getData()">Get Data</button>
-<div id="data" class="output">
-    Loading...
-</div>
-<div class="output">
-    Loading...
-    aaa<br>bbb<br />ccc
-</div>
 
 </html>
