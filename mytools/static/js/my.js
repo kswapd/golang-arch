@@ -3,12 +3,12 @@ console.log("Hello from my.js");
 
 function formatDate(date, format) {
     const map = {
-        'mm': date.getMonth() + 1,
-        'dd': date.getDate(),
+        'mm': ('0' + (date.getMonth() + 1)).slice(-2),
+        'dd': ('0' + date.getDate()).slice(-2),
         'yyyy': date.getFullYear(),
-        'HH': date.getHours(),
-        'MM': date.getMinutes(),
-        'SS': date.getSeconds()
+        'HH': ('0' + date.getHours()).slice(-2),
+        'MM': ('0' + date.getMinutes()).slice(-2),
+        'SS': ('0' + date.getSeconds()).slice(-2),
     };
 
     return format.replace(/mm|dd|yyyy|HH|MM|SS/gi, matched => map[matched]);
