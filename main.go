@@ -2,12 +2,8 @@ package main
 
 import (
 	"fmt"
-	_ "golang-arch/gui"
 	_ "golang-arch/httpclient"
 	"golang-arch/mytools"
-	_ "golang-arch/srcc"
-	_ "golang-arch/srccpp"
-	_ "golang-arch/srcobjc"
 )
 
 func main() {
