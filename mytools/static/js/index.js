@@ -1,36 +1,59 @@
-Vue.component('menu-component', {
-    props: {
-        items: {
-            type: Array,
-            required: true
-        }
-    },
-    template: `
-    <nav class="menu">
-      <ul>
-        <li v-for="item in items" :key="item.text">
-          <a :href="item.link" @click.prevent="$emit('menu-click', item)">{{ item.text }}</a>
-        </li>
-      </ul>
-    </nav>
-  `
-});
+
 
 var app = new Vue({
     el: '.main-container',
     data: {
         message: 'Hello Vue!',
         menuItems: [
-            { text: 'Home', link: '/' },
-            { text: 'About', link: '/about' },
-            { text: 'Contact', link: '/contact' }
-        ]
+            {
+                text: 'Home',
+                isOpen: false,
+                children: []
+            },
+            {
+                text: 'About',
+                isOpen: false,
+                children: [
+                    { text: 'Team', isOpen: false, children: [] },
+                    { text: 'Company', isOpen: false, children: [] }
+                ]
+            },
+            {
+                text: 'Services',
+                isOpen: false,
+                children: [
+                    { text: 'Web Development', isOpen: false, children: [] },
+                    { text: 'Mobile Development', isOpen: false, children: [] }
+                ]
+            },
+            {
+                text: 'Contact',
+                isOpen: false,
+                children: []
+            }
+        ],
+        currentView: 'Home' // Default view
     },
     mounted: function () {
         console.log('dddd')
         this.getData();
     },
     methods: {
+        switchView: function (view) {
+            this.currentView = view;
+        },
+        toggleMenu: function (item) {
+            item.isOpen = !item.isOpen;
+        },
+        handleMenuClick(item) {
+            if (item.children && item.children.length > 0) {
+                // If the item has children, toggle its `isOpen` property
+                item.isOpen = !item.isOpen;
+            } else {
+                // If the item has no children, switch the view
+                this.currentView = item.text;
+            }
+        },
         formatDate: function (date, format) {
             const map = {
                 'mm': ('0' + (date.getMonth() + 1)).slice(-2),
@@ -54,15 +77,6 @@ var app = new Vue({
                 this.message = "名称: " + data["body"]["name"] + "<br>";
                 this.message += "交易时间: " + formattedDate + "<br>";
                 this.message += "价格:" + data["body"]["price"] + "(" + data["body"]["unit"] + ")";
-            }
-        },
-        handleMenuClick: function (item) {
-            if (item.text === 'About') {
-                this.message = '<b>About Page</b><br>This is a personal note and demo site. Here you can find information about the author, project goals, and more.';
-            } else if (item.text === 'Home') {
-                this.getData();
-            } else if (item.text === 'Contact') {
-                this.message = '<b>Contact Page</b><br>For inquiries, please email: example@example.com';
             }
         }
     }

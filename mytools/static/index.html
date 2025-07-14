@@ -8,12 +8,62 @@
 </head>
 
 <body>
-    <!-- Navigation links are now handled by the Vue menu-component below -->
-    <h1>Personal First Page</h1>
     <div class="main-container">
-        <menu-component :items="menuItems" @menu-click="handleMenuClick"></menu-component>
-        <button v-on:click="getData">Refresh Data</button>
-        <div class="output" v-html="message"></div>
+        <div class="left-zone">
+            <nav class="menu">
+                <ul>
+                    <li v-for="item in menuItems" :key="item.text" :class="{ open: item.isOpen }">
+                        <a href="#" @click.prevent="handleMenuClick(item)">{{ item.text }}</a>
+                        <ul v-if="item.isOpen && item.children && item.children.length > 0">
+                            <li v-for="child in item.children" :key="child.text">
+                                <a href="#" @click.prevent="switchView(child.text)">{{ child.text }}</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="content">
+
+            <div v-if="currentView === 'Home'">
+                <h1>Welcome to Home</h1>
+                <p>This is the Home page content.</p>
+                <div class="gold-info">
+                    <button v-on:click="getData">Refresh Data</button>
+                    <div v-html="message"></div>
+                </div>
+            </div>
+            <div v-if="currentView === 'About'">
+                <h1>About Us</h1>
+                <p>Learn more about our team and company.</p>
+            </div>
+            <div v-if="currentView === 'Services'">
+                <h1>Our Services</h1>
+                <p>Explore the services we offer.</p>
+            </div>
+            <div v-if="currentView === 'Contact'">
+                <h1>Contact Us</h1>
+                <p>Get in touch with us.</p>
+            </div>
+            <div v-if="currentView === 'Team'">
+                <h1>Our Team</h1>
+                <p>Meet our amazing team.</p>
+            </div>
+            <div v-if="currentView === 'Company'">
+                <h1>Our Company</h1>
+                <p>Learn about our company's history and mission.</p>
+            </div>
+            <div v-if="currentView === 'Web Development'">
+                <h1>Web Development</h1>
+                <p>Details about our web development services.</p>
+            </div>
+            <div v-if="currentView === 'Mobile Development'">
+                <h1>Mobile Development</h1>
+                <p>Details about our mobile development services.</p>
+            </div>
+
+
+        </div>
     </div>
 
     <script src="js/index.js"></script>

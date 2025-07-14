@@ -2,10 +2,164 @@ html,
 body {
     margin: 5px;
     padding: 0;
+    height: 100%
 }
 
+.main-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
 
-.output {
+.left-zone {
+    width: 200px;
+    height: 100%;
+    background-color: #b4aaaa;
+    border-right: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    flex-grow: 1;
+}
+
+/*.menu {
+  
+    height: 100%;
+    background-color: #b4aaaa;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+}
+
+.menu a {
+    text-decoration: none;
+    color: black;
+
+    text-align: center;
+}
+
+.menu a:hover {
+    background-color: #e0e0e0;
+}
+
+.menu a.active {
+    background-color: #d0d0d0;
+    font-weight: bold;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.menu ul li {
+    padding: 0px;
+    
+    text-align: left;
+    margin: 10px 0;
+}*/
+
+/* General styles for the tree menu */
+.menu {
+    height: 100%;
+    background-color: #b4aaaa;
+    border: 1px solid #ccc;
+    display: flex;
+    flex-direction: column;
+}
+
+.menu ul {
+    list-style-type: none;
+    padding-left: 20px;
+    /* Indent child menus */
+    margin: 0;
+}
+
+.menu li {
+    margin: 5px 0;
+    position: relative;
+}
+
+.menu a {
+    text-decoration: none;
+    color: #333;
+    display: block;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.menu a:hover {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+/* Styles for nested menus */
+.menu ul li a {
+    padding-left: 15px;
+    /* Add extra padding for nested items */
+}
+
+/* Add a caret for items with children */
+.menu li>a::after {
+    content: '▶';
+    font-size: 12px;
+    margin-left: 10px;
+    float: right;
+    transition: transform 0.3s;
+}
+
+.menu li ul {
+    display: none;
+    /* Hide submenus by default */
+}
+
+.menu li.open>ul {
+    display: block;
+    /* Show submenu when parent is open */
+}
+
+.menu li>a::after {
+    content: '▶';
+    font-size: 12px;
+    margin-left: 10px;
+    float: right;
+    transition: transform 0.3s;
+}
+
+.menu li.open>a::after {
+    transform: rotate(90deg);
+    /* Rotate caret when submenu is open */
+}
+
+.content {
+    margin-left: 10px;
+    width: calc(100% - 120px);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gold-info {
+    display: flex;
+    flex-direction: row;
+    margin-top: 20px;
+}
+
+.gold-info button {
+    width: 100px;
+    height: 80px;
+    margin: 5px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.gold-info div {
     border-color: aqua;
     border-radius: 2px;
     border-style: solid;
