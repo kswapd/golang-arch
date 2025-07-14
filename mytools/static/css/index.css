@@ -3,3 +3,12 @@ body {
     margin: 5px;
     padding: 0;
 }
+
+
+.output {
+    border-color: aqua;
+    border-radius: 2px;
+    border-style: solid;
+    width: 300px;
+    height: 80px;
+}

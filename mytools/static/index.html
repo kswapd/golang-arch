@@ -4,30 +4,17 @@
 <head>
     <title>Static Website</title>
     <script src="js/vue.js"></script>
-    <link rel="stylesheet" href="js/index.css">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
 </head>
 
 <body>
-    <nav>
-        <ul>
-            <li><a href="#home">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#contact">Contact</a></li>
-        </ul>
-    </nav>
+    <!-- Navigation links are now handled by the Vue menu-component below -->
     <h1>Personal First Page</h1>
-    <div id="app">
-        {{ message }}
+    <div class="main-container">
+        <menu-component :items="menuItems" @menu-click="handleMenuClick"></menu-component>
+        <button v-on:click="getData">Refresh Data</button>
+        <div class="output" v-html="message"></div>
     </div>
-
-    <div id="app-2">
-        <span v-bind:title="message">
-            Hover your mouse over me for a few seconds
-            to see my dynamically bound title!
-        </span>
-    </div>
-
 
     <script src="js/index.js"></script>
 </body>
