@@ -93,6 +93,11 @@ body {
 }
 
 .menu a:hover {
+    /*background-color: #007BFF;*/
+    color: #007BFF;
+}
+
+.menu li.active>a {
     background-color: #007BFF;
     color: #fff;
 }
@@ -103,7 +108,7 @@ body {
     /* Add extra padding for nested items */
 }
 
-/* Add a caret for items with children */
+/* Add a caret for items with children 
 .menu li>a::after {
     content: '▶';
     font-size: 12px;
@@ -111,18 +116,15 @@ body {
     float: right;
     transition: transform 0.3s;
 }
+*/
 
-.menu li ul {
-    display: none;
-    /* Hide submenus by default */
-}
 
 .menu li.open>ul {
     display: block;
     /* Show submenu when parent is open */
 }
 
-.menu li>a::after {
+.menu li.add-arrow>a::after {
     content: '▶';
     font-size: 12px;
     margin-left: 10px;

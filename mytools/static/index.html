@@ -12,11 +12,13 @@
         <div class="left-zone">
             <nav class="menu">
                 <ul>
-                    <li v-for="item in menuItems" :key="item.text" :class="{ open: item.isOpen }">
+                    <li v-for="item in menuItems" :key="item.text"
+                        :class="{ open: item.isOpen, 'add-arrow': item.children && item.children.length > 0, active: currentView === item.text}">
                         <a href="#" @click.prevent="handleMenuClick(item)">{{ item.text }}</a>
                         <ul v-if="item.isOpen && item.children && item.children.length > 0">
-                            <li v-for="child in item.children" :key="child.text">
-                                <a href="#" @click.prevent="switchView(child.text)">{{ child.text }}</a>
+                            <li v-for="child in item.children" :key="child.text"
+                                :class="{ active: currentView === child.text }">
+                                <a href=" #" @click.prevent="switchView(child.text)">{{ child.text }}</a>
                             </li>
                         </ul>
                     </li>
@@ -29,7 +31,7 @@
                 <h1>Welcome to Home</h1>
                 <p>This is the Home page content.</p>
                 <div class="gold-info">
-                    <button v-on:click="getData">Refresh Data</button>
+                    <button @click="getData">Refresh Data</button>
                     <div v-html="message"></div>
                 </div>
             </div>
