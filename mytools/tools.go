@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -42,25 +43,21 @@ type GoldenTD struct {
 	Unit      string  `json:"unit"`
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
+func handleMain(w http.ResponseWriter, r *http.Request) {
 
-	/*tmpl, err := template.ParseFiles(fmt.Sprintf("%s%s", staticPath, portalIndex))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	path := r.URL.Path
+
+	// Check if the requested path corresponds to a real file
+	fullPath := staticDir + path
+	_, err := os.Stat(fullPath)
+
+	// If file doesn't exist, serve index.html
+	if os.IsNotExist(err) {
+		http.ServeFile(w, r, fmt.Sprintf("%s/%s", staticDir, portalIndexFile))
 		return
 	}
-
-	err = tmpl.Execute(w, data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}*/
-
-	// Create a file server handler for the specified directory.
-	//staticDir := fmt.Sprintf("%s%s", staticPath, portalIndex)
-	fs := http.FileServer(http.Dir(staticDir))
-
-	// Handle requests to the root path by serving files from the static directory.
-	http.Handle("/", fs)
+	// Otherwise, serve the actual file
+	http.FileServer(http.Dir(staticDir)).ServeHTTP(w, r)
 }
 
 func currentMilliseconds() (int64, string) {
@@ -168,9 +165,9 @@ func handleData(w http.ResponseWriter, r *http.Request) {
 func RunHtmlView() {
 	var port int = 8888
 	log.Infof("Starting server on :%d", port)
-	fs := http.FileServer(http.Dir(staticDir))
+	//fs := http.FileServer(http.Dir(staticDir))
 	// Handle requests to the root path by serving files from the static directory.
-	http.Handle("/", fs)
+	http.HandleFunc("/", handleMain)
 	http.HandleFunc("/api/data", handleData)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 		log.Fatal(err)
