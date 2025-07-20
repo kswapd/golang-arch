@@ -15,10 +15,8 @@ const Services = { template: `<div><h1>Our Services</h1><p>Explore the services 
 const routes = [
     { path: '/', component: Home },
     { path: '/home', component: Home },
-    { path: '/about', component: About },
     { path: '/about/team', component: Team },
     { path: '/about/company', component: Company },
-    { path: '/services', component: Services },
     { path: '/services/web-development', component: WebDevelopment },
     { path: '/services/mobile-development', component: MobileDevelopment },
     { path: '/contact', component: Contact }
@@ -71,16 +69,9 @@ var app = new Vue({
             }
         ],
     },
-    mounted: function () {
-        console.log('dddd')
-        this.getData();
-    },
     methods: {
-        addScript: function (url) {
-            document.write("<script language=javascript src=" + url + "></script>");
-        },
         switchView: function (view) {
-            window.location.hash = this.splitChar + view.toLowerCase();
+            // window.location.hash = this.splitChar + view.toLowerCase();
             console.log("window.location.hash:", window.location.hash);
             console.log("window.location.pathname:", window.location.pathname);
         },
@@ -99,29 +90,22 @@ var app = new Vue({
                 }
             }
         },
-        formatDate: function (date, format) {
-            const map = {
-                'mm': ('0' + (date.getMonth() + 1)).slice(-2),
-                'dd': ('0' + date.getDate()).slice(-2),
-                'yyyy': date.getFullYear(),
-                'HH': ('0' + date.getHours()).slice(-2),
-                'MM': ('0' + date.getMinutes()).slice(-2),
-                'SS': ('0' + date.getSeconds()).slice(-2),
-            };
-            return format.replace(/mm|dd|yyyy|HH|MM|SS/gi, matched => map[matched]);
-        },
-        getData: async function () {
-            this.message = "Loading...";
-            const response = await fetch('/api/data');
-            const data = await response.json();
-            console.log(data)
-            if (data["messageType"] == "1000") {
-                const milliseconds = data["body"]["tradeTime"];
-                const date = new Date(milliseconds);
-                const formattedDate = this.formatDate(date, 'yyyy-mm-dd HH:MM:SS');
-                this.message = "名称: " + data["body"]["name"] + "<br>";
-                this.message += "交易时间: " + formattedDate + "<br>";
-                this.message += "价格:" + data["body"]["price"] + "(" + data["body"]["unit"] + ")";
+        // 自动展开当前路径对应的父菜单
+        updateMenuOpenState() {
+            this.menuItems.forEach(item => {
+                if (item.children && item.children.some(child => this.$route.path === child.url)) {
+                    item.isOpen = true;
+                } else {
+                    item.isOpen = false;
+                }
+            });
+        }
+    },
+    watch: {
+        '$route': {
+            immediate: true,
+            handler() {
+                this.updateMenuOpenState();
             }
         }
     }
