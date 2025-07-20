@@ -1,86 +1,41 @@
 html,
 body {
-    margin: 5px;
+    margin: 0;
     padding: 0;
-    height: 100%
+    height: 100%;
+    overflow: hidden;
+    /* 防止全局滚动 */
 }
 
 .main-container {
     width: 100%;
-    height: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: row;
 }
 
 .left-zone {
     width: 200px;
-    height: 100%;
     background-color: #b4aaaa;
     border-right: 1px solid #ccc;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    flex-grow: 1;
 }
 
-/*.menu {
-  
-    height: 100%;
-    background-color: #b4aaaa;
-    border: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-}
-
-.menu a {
-    text-decoration: none;
-    color: black;
-
-    text-align: center;
-}
-
-.menu a:hover {
-    background-color: #e0e0e0;
-}
-
-.menu a.active {
-    background-color: #d0d0d0;
-    font-weight: bold;
-}
-
-.menu ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.menu ul li {
-    padding: 0px;
-    
-    text-align: left;
-    margin: 10px 0;
-}*/
-
-/* General styles for the tree menu */
 .menu {
-    height: 100%;
-    background-color: #b4aaaa;
-    border: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
 }
 
 .menu ul {
     list-style-type: none;
     padding-left: 20px;
-    /* Indent child menus */
     margin: 0;
 }
 
 .menu li {
     margin: 5px 0;
-    position: relative;
 }
 
 .menu a {
@@ -93,13 +48,22 @@ body {
 }
 
 .menu a:hover {
-    /*background-color: #007BFF;*/
     color: #007BFF;
 }
 
 .menu li.active>a {
     background-color: #007BFF;
-    color: #fff;
+    color: white;
+}
+
+.content {
+    margin-left: 10px;
+    flex: 1;
+    /* 自动填充剩余空间 */
+    overflow-y: auto;
+    /* 只在需要时显示滚动条 */
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 /* Styles for nested menus */
@@ -137,13 +101,8 @@ body {
     /* Rotate caret when submenu is open */
 }
 
-.content {
-    margin-left: 10px;
-    width: calc(100% - 120px);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
+
+
 
 .gold-info {
     display: flex;

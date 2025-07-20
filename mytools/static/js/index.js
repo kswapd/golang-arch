@@ -19,7 +19,8 @@ const routes = [
     { path: '/about/company', component: Company },
     { path: '/services/web-development', component: WebDevelopment },
     { path: '/services/mobile-development', component: MobileDevelopment },
-    { path: '/contact', component: Contact }
+    { path: '/contact', component: Contact },
+    { path: '/game/tetris', component: window.Tetris, props: { src: 'html/tetris.html' } }
 ]
 
 // 3. 创建 router 实例，然后传 `routes` 配置
@@ -66,6 +67,14 @@ var app = new Vue({
                 url: '/contact', // URL for Contact
                 isOpen: false,
                 children: []
+            },
+            {
+                text: 'Game',
+                url: '/game',
+                isOpen: false,
+                children: [
+                    { text: 'Tetris', url: '/game/tetris', isOpen: false, children: [] }
+                ]
             }
         ],
     },
